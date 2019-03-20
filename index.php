@@ -399,13 +399,23 @@
                 if( !data.success ) 
                   $errorMsg.text( data.error );
                 else {
-                  var index = docsBuffer.length;
+                  let index = docsBuffer.length;
                   if (!index) {
                     docsBuffer = [];
                     index = 0;
                   }
                   docsBuffer[index] = data.filename;
-                  $('#file-cols-'+(index+1)).text(data.fields);
+                  let lastColIndex = Number($('#file-cols-'+index).text().substr(-1, 1));
+
+                  if (data.fields > 0) {
+                    let aFields = "";
+                    for (let col = 1; col <= data.fields; ++col) {
+                        aFields += "Col"+(col+lastColIndex)+", ";
+                    }
+                    //Remove extra space from last
+                    aFields = aFields.replace(/,\s*$/, "");
+                    $('#file-cols-'+(index+1)).text(aFields);
+                  }
                   if (index == 1) $('.box__restart').hide();
                   showPfiles();
                 }

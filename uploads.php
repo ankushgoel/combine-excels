@@ -54,22 +54,7 @@ if (isset($_FILES['file']['name'])) {
 			$highestColumn = $sheet->getHighestColumn();
 			$highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
 
-			if ($highestColumnIndex > 0) {
-				//Available Fields
-			    $aFields = "";
-			    for ($col = 1; $col <= $highestColumnIndex; ++$col) {
-			        $aFields .= "Col".$col.", ";
-			    }
-			    //Remove extra space from last
-			    $aFields = trim($aFields);
-			    //Check extra comma and remove it if exists
-			    if (substr($aFields, -1, 1) == ',')
-			    {
-			      $aFields = substr($aFields, 0, -1);
-			    }
-			}
-
-			echo jsonResponse(array("success" => true, "filename" => $NewfileName, "fields" => $aFields));
+			echo jsonResponse(array("success" => true, "filename" => $NewfileName, "fields" => $highestColumnIndex));
 		}
 
 	}//incase of wrong extension
