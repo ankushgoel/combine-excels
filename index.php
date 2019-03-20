@@ -10,7 +10,7 @@
   <!-- Select2 -->
   <link rel="stylesheet" href="plugins/select2/select2.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="css/style.min.css?ver=1.0">
+  <link rel="stylesheet" href="css/style.min.css?ver=1.1">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 
@@ -96,22 +96,28 @@
                 <form role="form">
                   <div class="card-body">
                     <div class="form-group">
-                      <label for="date">File 1:</label>
-                      <input type="headerlogoalt" class="form-control" id="date" placeholder="Available Fields:- " value="<?php echo $data['date']?>">
+                      <label for="">File 1:</label>
+                      <div class="input-group-prepend">
+                        <span>Available Fields:- </span>&emsp;
+                        <span class="input-group-text" id="file-cols-1"></span>
+                      </div>
                     </div>
                     <div class="form-group">
-                      <label for="time">File 2:</label>
-                      <input type="headertext" class="form-control" id="time" placeholder="Available Fields:- " value="<?php echo $data['time']?>">
+                      <label for="">File 2:</label>
+                      <div class="input-group-prepend">
+                        <span>Available Fields:- </span>&emsp;
+                        <span class="input-group-text" id="file-cols-2"></span>
+                      </div>
                     </div>
                     <div class="form-group">                
-                      <label for="singers">Set Order:</label>
+                      <label for="set-order">Set Order:</label>
                       <div class="mb-3">
-                        <textarea class="form-control" id="" placeholder="Place some text here"></textarea>
+                        <textarea class="form-control" id="" placeholder="Provide columns separated by comma delimiter here to set order" style="width: 50%"></textarea>
                       </div>
                     </div>
                     <!-- <div class="form-group">
                       <label>Set File Type:</label>
-                      <select class="form-control select2" data-placeholder="Set File type" id="day">
+                      <select class="form-control select2" data-placeholder="Set File type" id="">
                         <option>Xlsx</option>
                         <option>Csv</option>
                         <option>txt</option>
@@ -346,6 +352,13 @@
         // if the form was submitted
         $form.on( 'submit', function( e )
         {
+          if (docsBuffer.length && docsBuffer.length == 2) {
+            showFloatingMessage('error', 'Error!', 'Sorry! Maximum 2 file are allowed!', 'show');
+            setTimeout(function() {
+              $("#floating-message").addClass("hidden");
+            }, 4000);
+            return false;
+          }
           // preventing the duplicate submissions if the current one is in progress
           if( $form.hasClass( 'is-uploading' ) ) return false;
 
@@ -383,15 +396,17 @@
               {
                 //console.log(data);
                 $form.addClass( data.success == true ? 'is-success' : 'is-error' );
-                if( !data.success ) $errorMsg.text( data.error );
+                if( !data.success ) 
+                  $errorMsg.text( data.error );
                 else {
-                  // meta_type = data.meta_type;
                   var index = docsBuffer.length;
                   if (!index) {
                     docsBuffer = [];
                     index = 0;
                   }
-                  docsBuffer[index] = data.message;
+                  docsBuffer[index] = data.filename;
+                  $('#file-cols-'+(index+1)).text(data.fields);
+                  if (index == 1) $('.box__restart').hide();
                   showPfiles();
                 }
               },

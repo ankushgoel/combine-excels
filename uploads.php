@@ -1,9 +1,10 @@
 <?php
-error_reporting(E_ALL);
 
+require 'vendor/autoload.php';
 
-// require_once('functions.php');
-// $db =  getConnection();
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 // Utility function to return json, given a keyed array
 function jsonResponse($array) {
@@ -27,8 +28,9 @@ if (isset($_FILES['file']['name'])) {
 	if ($fileExt == 'xls'||$fileExt == 'xlsx'||$fileExt == 'csv'){
 		//remove any special symbols if present in the current filename
 		$fileName = preg_replace("/\.[^.\s]{3,4}$/", "", $fileName);
+		$RandomNum = rand(11111, 99999);
 		//create a filename of form "name-randomnumber.extension"
-		$NewfileName = $fileName . '.' . $fileExt;
+		$NewfileName = $fileName . '-' . $RandomNum . '.' . $fileExt;
 
 		//specify the upload location for file
 			$Destination = 'uploads/';
@@ -46,7 +48,28 @@ if (isset($_FILES['file']['name'])) {
 			echo jsonResponse(array("success" => false, "error" => "Some error occured while uploading!", "refresh" => false));
 
 		}else{
-			echo jsonResponse(array("success" => true, "message" => $NewfileName));
+
+			$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load("uploads/".$NewfileName);
+			$sheet = $spreadsheet->getActiveSheet();
+			$highestColumn = $sheet->getHighestColumn();
+			$highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
+
+			if ($highestColumnIndex > 0) {
+				//Available Fields
+			    $aFields = "";
+			    for ($col = 1; $col <= $highestColumnIndex; ++$col) {
+			        $aFields .= "Col".$col.", ";
+			    }
+			    //Remove extra space from last
+			    $aFields = trim($aFields);
+			    //Check extra comma and remove it if exists
+			    if (substr($aFields, -1, 1) == ',')
+			    {
+			      $aFields = substr($aFields, 0, -1);
+			    }
+			}
+
+			echo jsonResponse(array("success" => true, "filename" => $NewfileName, "fields" => $aFields));
 		}
 
 	}//incase of wrong extension
