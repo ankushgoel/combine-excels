@@ -6,9 +6,15 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+if (!$_POST || empty($_POST)) {
+	die(jsonResponse(array("success" => false, "error" => "Bad Request!")));
+}
+
 $file1 = $_POST['files'][0]; //"1.xlsx";
 $file2 = $_POST['files'][1]; //"2.xlsx";
 $sequence = $_POST['order']; //"Col10,Col9,Col8,Col7,Col6,Col5,Col4,Col3,Col1";
+
+$sequence = preg_replace('/\s+/', '', $sequence);
 
 $seq_array = explode(",",$sequence);
 
