@@ -6,9 +6,9 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$file1 = "1.xlsx";
-$file2 = "2.xlsx";
-$sequence = "Col10,Col9,Col8,Col7,Col6,Col5,Col4,Col3,Col1";
+$file1 = $_POST['files'][0]; //"1.xlsx";
+$file2 = $_POST['files'][1]; //"2.xlsx";
+$sequence = $_POST['order']; //"Col10,Col9,Col8,Col7,Col6,Col5,Col4,Col3,Col1";
 
 $seq_array = explode(",",$sequence);
 
@@ -149,16 +149,27 @@ $spreadsheet2 = \PhpOffice\PhpSpreadsheet\IOFactory::load('uploads/'.$file2);
 		}
 	}
 
+	// For Debugging
 	// $sheetdata = $sheet -> toArray();
 	// echo "<pre>";
 	// print_r($sheetdata);
+	// echo json_encode($sheetdata);
 
-	// // echo json_encode($sheetdata);
 
-
+$RandomNum = rand(11111, 99999);
+$Newfile = "outputs/output". "-" . $RandomNum .".xlsx";
 $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
-$writer->save("output.xlsx");
+$writer->save($Newfile);
 
+echo jsonResponse(array("success" => true, "file" => $Newfile));
+
+
+
+	// Utility function to return json, given a keyed array
+	function jsonResponse($array) {
+		header('Content-Type: application/json');
+		return json_encode($array);
+	}
 
 
 	function remove_empty($var)
@@ -168,5 +179,4 @@ $writer->save("output.xlsx");
 		}else{
 			return false;
 		}
-		//return($var & 1);
 	}

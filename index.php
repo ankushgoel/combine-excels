@@ -98,21 +98,29 @@
                     <div class="form-group">
                       <label for="">File 1:</label>
                       <div class="input-group-prepend">
-                        <span>Available Fields:- </span>&emsp;
+                        <div class="col-sm-2">
+                          <span>Available Fields:- </span>
+                        </div>
+                        <div class="col-sm-12">
                         <span class="input-group-text" id="file-cols-1"></span>
+                        </div>
                       </div>
                     </div>
                     <div class="form-group">
                       <label for="">File 2:</label>
                       <div class="input-group-prepend">
-                        <span>Available Fields:- </span>&emsp;
+                        <div class="col-sm-2">
+                          <span>Available Fields:- </span>
+                        </div>
+                        <div class="col-sm-12">
                         <span class="input-group-text" id="file-cols-2"></span>
+                        </div>
                       </div>
                     </div>
-                    <div class="form-group">                
-                      <label for="set-order">Set Order:</label>
-                      <div class="mb-3">
-                        <textarea class="form-control" id="" placeholder="Provide columns separated by comma delimiter here to set order" style="width: 50%"></textarea>
+                    <div class="form-group row">                
+                      <label for="set-order" class="col-sm-2 col-form-label">Set Order:</label>
+                      <div class="col-sm-10 mb-3">
+                        <textarea class="form-control" id="set-order" placeholder="Provide columns separated by comma delimiter here to set order" style="width: 50%"></textarea>
                       </div>
                     </div>
                     <!-- <div class="form-group">
@@ -123,6 +131,9 @@
                         <option>txt</option>
                       </select>
                     </div> -->
+                    <div class="col-md-12 text-center">
+                      <button type="submit" id="download" class="btn btn-primary">Download Output File</button>
+                    </div>
                   </div>
                   <!-- /.card-body -->
 
@@ -196,28 +207,32 @@
   <!-- Page script -->
   <script>
     function showFloatingMessage(type, title, content, action) {
-      
+      $el = $("#floating-message");
       if(type == "success"){
-        $("#floating-message").addClass("positive");
-        $("#floating-message").removeClass("negative");
-        $("#floating-message").removeClass("info");
+        $el.addClass("positive");
+        $el.removeClass("negative");
+        $el.removeClass("info");
       }else if(type == "error"){
-        $("#floating-message").addClass("negative");
-        $("#floating-message").removeClass("positive");
-        $("#floating-message").removeClass("info");
+        $el.addClass("negative");
+        $el.removeClass("positive");
+        $el.removeClass("info");
       }else if(type == "info"){
-        $("#floating-message").addClass("info");
-        $("#floating-message").removeClass("positive");
-        $("#floating-message").removeClass("negative");
+        $el.addClass("info");
+        $el.removeClass("positive");
+        $el.removeClass("negative");
       }
 
       $("#floating-title").html(title);
       $("#floating-content").html(content);
-      $("#floating-message").removeClass("hidden");
+      $el.removeClass("hidden");
+
+      setTimeout(function() {
+        $el.addClass("hidden");
+      }, 4000);
     }
 
     //Initialize Docs Array
-    var docsBuffer = [];
+    var filesBuffer = [];
 
     $(function () {
       //Initialize Select2 Elements
@@ -228,12 +243,12 @@
 
 
       function showPfiles(){
-          var len = docsBuffer.length;
+          var len = filesBuffer.length;
           if(len>0){
             $('.js-upload-finished').html('');
             $('.js-upload-finished').html('<h3>Uploaded file(s)</h3>');
             while (len>0){
-              addProcessedFile(docsBuffer[len-1]);
+              addProcessedFile(filesBuffer[len-1]);
               len--;
             }
             $('.js-upload-finished').show();
@@ -277,7 +292,7 @@
           keyboard : false
         }).one('click', '#formdelete', function() {
             deleteDoc(null, trigger);
-            docsBuffer = $.grep(docsBuffer, function(value) {
+            filesBuffer = $.grep(filesBuffer, function(value) {
               return value != name;
             });
         }).one('click', '#nodelete', function(ev) {
@@ -352,11 +367,8 @@
         // if the form was submitted
         $form.on( 'submit', function( e )
         {
-          if (docsBuffer.length && docsBuffer.length == 2) {
+          if (filesBuffer.length && filesBuffer.length == 2) {
             showFloatingMessage('error', 'Error!', 'Sorry! Maximum 2 file are allowed!', 'show');
-            setTimeout(function() {
-              $("#floating-message").addClass("hidden");
-            }, 4000);
             return false;
           }
           // preventing the duplicate submissions if the current one is in progress
@@ -399,12 +411,12 @@
                 if( !data.success ) 
                   $errorMsg.text( data.error );
                 else {
-                  let index = docsBuffer.length;
+                  let index = filesBuffer.length;
                   if (!index) {
-                    docsBuffer = [];
+                    filesBuffer = [];
                     index = 0;
                   }
-                  docsBuffer[index] = data.filename;
+                  filesBuffer[index] = data.filename;
                   let lastColIndex = Number($('#file-cols-'+index).text().substr(-1, 1));
 
                   if (data.fields > 0) {
@@ -445,8 +457,7 @@
         });
 
 
-        // restart the form if has a state of error/success
-
+        // Restart the form if has a state of error/success
         $restart.on( 'click', function( e )
         {
           e.preventDefault();
@@ -460,7 +471,50 @@
         .on( 'blur', function(){ $input.removeClass( 'has-focus' ); });
       });
 
+      
+      $("#download").click(function(ev) {
+        ev.preventDefault();
+        $(ev.target).blur();
 
+        let order = $("#set-order").val();
+
+        if (!order.length || filesBuffer.length != 2) {
+          showFloatingMessage("error", "Please add necessary details first", "", "show");
+          return;
+        }
+
+        showFloatingMessage("info", "Processing Data!", "", "show");
+        $('.container-fluid').fadeTo(0, 0.5);
+
+        $.ajax({
+          method: "POST",
+          dataType: "JSON",
+          data : {
+            "order" : order,
+            "files": filesBuffer
+          },
+          url: "process.php"
+        }).done(function(res){
+          $('.container-fluid').fadeTo("slow", 1);
+          if(res.success){
+              showFloatingMessage('success', 'Starting Download!', '', 'show');
+
+              var link = document.createElement('a');
+              link.download = 'output.xlsx';
+              link.href = res.file;
+              link.click();
+            }else{
+              if (res.message) {
+                showFloatingMessage('error', 'Error!', res.message, 'show');
+              }else{
+                showFloatingMessage('error', 'Error!', "Something went wrong!!", 'show');
+              }
+            }
+        }).fail(function(xhr,status){
+          $('.container-fluid').fadeTo("slow", 1);
+          showFloatingMessage('error', 'Error!', "Something went wrong!!", 'show');
+        });
+      });
 
     })
   </script>
