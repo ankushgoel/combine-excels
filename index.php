@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Select2 -->
-  <link rel="stylesheet" href="plugins/select2/select2.min.css">
+  <!-- <link rel="stylesheet" href="plugins/select2/select2.min.css"> -->
   <!-- Theme style -->
   <link rel="stylesheet" href="css/style.min.css?ver=1.1">
   <!-- Google Font: Source Sans Pro -->
@@ -202,7 +202,7 @@
   <!-- Bootstrap 4 -->
   <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Select2 -->
-  <script src="plugins/select2/select2.full.min.js"></script>
+  <!-- <script src="plugins/select2/select2.full.min.js"></script> -->
 
   <!-- Page script -->
   <script>
@@ -236,7 +236,7 @@
 
     $(function () {
       //Initialize Select2 Elements
-      $('.select2').select2()
+      // $('.select2').select2()
 
 
       var filecontent = $('#processedFile').html();
